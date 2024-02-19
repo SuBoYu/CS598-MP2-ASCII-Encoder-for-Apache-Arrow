@@ -15,21 +15,33 @@
 # specific language governing permissions and limitations
 # under the License.
 
-name: "Label when reviewed"
-on: pull_request_review
+cmake_minimum_required(VERSION 3.16)
 
-permissions:
-  contents: read
+project(ArrowMinimalExample)
 
-jobs:
-  # due to GitHub Actions permissions we can't change labels on the pull_request_review
-  # workflow. We trigger a new workflow run which will have permissions to add labels.
-  label-when-reviewed:
-    name: "Label PRs when reviewed"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Upload PR review Payload"
-        uses: actions/upload-artifact@v3
-        with:
-          path: "${{ github.event_path }}"
-          name: "pr_review_payload"
+option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
+
+find_package(Arrow REQUIRED)
+find_package(Parquet REQUIRED)
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+# We require a C++17 compliant compiler
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+message(STATUS "Arrow version: ${ARROW_VERSION}")
+message(STATUS "Arrow SO version: ${ARROW_FULL_SO_VERSION}")
+
+add_executable(test test.cc checker.cc)
+
+if(ARROW_LINK_SHARED)
+  target_link_libraries(test PRIVATE Arrow::arrow_shared Parquet::parquet_shared)
+else()
+  target_link_libraries(test PRIVATE Arrow::arrow_static Parquet::parquet_static)
+endif()

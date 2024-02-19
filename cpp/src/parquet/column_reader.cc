@@ -888,6 +888,7 @@ class ColumnReaderImplBase {
         case Encoding::RLE:
         case Encoding::DELTA_BINARY_PACKED:
         case Encoding::DELTA_BYTE_ARRAY:
+        case Encoding::ASCII:
         case Encoding::DELTA_LENGTH_BYTE_ARRAY: {
           auto decoder = MakeTypedDecoder<DType>(encoding, descr_, pool_);
           current_decoder_ = decoder.get();

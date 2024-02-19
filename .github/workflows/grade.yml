@@ -1,0 +1,22 @@
+name: grade-mp
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: grade
+      run: |
+        cd cpp/cs598/ascii 
+        docker-compose run grade

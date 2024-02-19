@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  grade:
+    build:
+      context: .
+      dockerfile: minimal.dockerfile
+    volumes:
+      - ../../../:/arrow:delegated
+      - .:/io:delegated
+    command:
+      - "/io/run.sh"
+
+  debug:
+    build:
+      context: .
+      dockerfile: minimal.dockerfile
+    volumes:
+      - ../../../:/arrow:delegated
+      - .:/io:delegated
+    command:
+      - "/bin/bash"
