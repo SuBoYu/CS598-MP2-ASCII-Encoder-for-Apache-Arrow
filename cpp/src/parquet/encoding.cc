@@ -176,6 +176,12 @@ class PlainEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
 
 template <typename DType>
 void PlainEncoder<DType>::Put(const T* buffer, int num_values) {
+  //added by cs598
+  //buffer: the pointer to the data to be appended
+  //T: the type of the data
+  //num_values: how many numbers of values of type T are there in the buffer
+  //PARQUET_THROW_NOT_OK: is just a error throwing decorator, you don't need to know how it's implemented
+  //sink_: the buffer to be flushed to disk, this is where the output value is stored
   if (num_values > 0) {
     PARQUET_THROW_NOT_OK(sink_.Append(buffer, num_values * sizeof(T)));
   }
@@ -1017,6 +1023,13 @@ int PlainDecoder<DType>::DecodeArrow(
 template <typename T>
 inline int DecodePlain(const uint8_t* data, int64_t data_size, int num_values,
                        int type_length, T* out) {
+                        //added by cs598
+                        //out: memory of output
+                        //T: type of the element to be decoded
+                        //data:byte pointer to data
+                        //data_size: number of byte in data
+                        //num_values: number of element to decode
+                        //type_legth: the legnth of the type to be decoded
   int64_t bytes_to_decode = num_values * static_cast<int64_t>(sizeof(T));
   if (bytes_to_decode > data_size || bytes_to_decode > INT_MAX) {
     ParquetException::EofException();
@@ -1092,7 +1105,10 @@ inline int DecodePlain<FixedLenByteArray>(const uint8_t* data, int64_t data_size
 
 template <typename DType>
 int PlainDecoder<DType>::Decode(T* buffer, int max_values) {
+  //added by cs598
+  //This function will be called when decode
   max_values = std::min(max_values, num_values_);
+  //refer to the comment for function: inline int DecodePlain(const uint8_t* data, int64_t data_size, int num_values,int type_length, T* out)
   int bytes_consumed = DecodePlain<T>(data_, len_, max_values, type_length_, buffer);
   data_ += bytes_consumed;
   len_ -= bytes_consumed;
@@ -3887,6 +3903,8 @@ std::unique_ptr<Encoder> MakeEncoder(Type::type type_num, Encoding::type encodin
         return std::make_unique<ASCIIEncoder<Int32Type>>(descr,pool);
       case Type::INT64:
         return std::make_unique<ASCIIEncoder<Int64Type>>(descr, pool);
+      // case Type::FLOAT:
+      //   return std::make_unique<ASCIIEncoder<FloatType>>(descr,pool);
       default:
         throw ParquetException(
             "ASCII encoder only supports INT32 and INT64");
@@ -3969,6 +3987,8 @@ std::unique_ptr<Decoder> MakeDecoder(Type::type type_num, Encoding::type encodin
         return std::make_unique<ASCIIDecoder<Int32Type>>(descr);
       case Type::INT64:
         return std::make_unique<ASCIIDecoder<Int64Type>>(descr);
+      // case Type::FLOAT:
+      //   return std::make_unique<ASCIIDecoder<FloatType>>(descr);
       default:
         throw ParquetException(
             "ASCII decoder only supports INT32 and INT64");
