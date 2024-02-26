@@ -16,6 +16,8 @@
   specific language governing permissions and limitations
   under the License.
 -->
+# CS598 Project 2
+This repository is forked from Apache Arrow. Please check the instruction for the CS598 MP2 at cpp/cs598/ascii/README.md
 
 # Apache Arrow
 
