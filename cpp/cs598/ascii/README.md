@@ -51,7 +51,7 @@ To do this, you'll need to fill the [`int ASCIIDecoder<DType>::Decode(T* buffer,
 The ascii encoder will encode integer to ascii code. e.g., for integer 96, the encoder should encode it as '9''6''\000', with '\000' marks the end of a string.
 
 Ways to quickly get started: 
-1. Observe the corresponding functions in PlainEncoder and understand what they are doing. The TA has already added some comment for [PlainEncoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L178) and [PlainDecoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L1107).
+1. Observe the corresponding functions in PlainEncoder and understand what they are doing. The TA has already added some comment for [PlainEncoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L178) and [PlainDecoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L1107).
 2. Using debugger tools like GDB to trace what's happening. (To start gdb, in io/ directory of the container, run gdb /build/example/arrow-example)
 
 After finishing task 1, you should be able to execute run.sh in /io and get 50% score.
@@ -61,7 +61,7 @@ Polish your [`int ASCIIDecoder<DType>::Decode(T* buffer, int max_vfalues)`](http
 
 The ASCII representation of float should keep two decimal places. e.g., For float 32.5887, the encoder should encode it as '3''2''.''5''9''\000'. 
 
-Except changing those two functions, you should also uncomment [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3890) and [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3973) in encoding.cc for the float encoding to run.
+Except changing those two functions, you should also uncomment [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3906) and [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3990) in encoding.cc for the float encoding to run.
 ![alt text](image-4.png) ![alt text](image-5.png)
 
 After finishing task 2, you should be able to execute run.sh in /io and get all the 100% score. (See Running the test project for detail)
