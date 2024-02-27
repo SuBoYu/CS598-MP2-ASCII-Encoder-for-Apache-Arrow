@@ -77,7 +77,7 @@ When encoding floats as ASCII representation, round to **two decimal places**: e
 After extending the two functions to support floats, you should also uncomment [this code snippet](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3906) and [this code snippet](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3990) in `encoding.cc` for the float encoding to run.
 ![alt text](image-4.png) ![alt text](image-5.png)
 
-After finishing task 2, executing `run.sh` in `/io` should display a full score of 100%. (See Running the test project for detail)
+After finishing task 2, executing `run.sh` in `/io` should display a full score of 100%.
 
 ![alt text](image.png)
 
