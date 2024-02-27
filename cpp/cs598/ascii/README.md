@@ -17,7 +17,7 @@ This project will require a basic understanding of Apache Arrow and the Apache P
 [Difference between Arrow and Parquet](https://arrow.apache.org/faq/#:~:text=Arrow%20data%20is%20not%20compressed,commonly%20used%20together%20in%20applications).
 
 ## Getting Started
-### Step 1: Seting up Your Github Repository
+### Step 1: Setting up Your Github Repository
 Similar to MP1, you will need to [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository to your own Github account to get started - please do not commit directly to this repository!
 You will then need to make your cloned repository **private**. 
 
