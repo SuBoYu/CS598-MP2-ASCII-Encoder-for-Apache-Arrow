@@ -64,7 +64,7 @@ Hints to get started:
 
 ```
 cd io/  # Make sure you are in the container
-gdb /build/example/arrow-example
+gdb /build/test/test
 ```
 
 After finishing task 1, executing `run.sh` in `/io` should display a score of 50%.
