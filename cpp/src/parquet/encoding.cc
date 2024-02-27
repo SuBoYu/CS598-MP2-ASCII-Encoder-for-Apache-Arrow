@@ -176,12 +176,17 @@ class PlainEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
 
 template <typename DType>
 void PlainEncoder<DType>::Put(const T* buffer, int num_values) {
-  //added by cs598
-  //buffer: the pointer to the data to be appended
-  //T: the type of the data
-  //num_values: how many numbers of values of type T are there in the buffer
-  //PARQUET_THROW_NOT_OK: is just a error throwing decorator, you don't need to know how it's implemented
-  //sink_: the buffer to be flushed to disk, this is where the output value is stored
+  /*
+    Hints from CS598 TAs: this function appends values of type `T` contained in `buffer`
+    into the `sink_`, which is a buffer storing output values to be flushed to disk.
+
+    Don't worry about the specifics of PARQUET_THROW_NOT_OK - it is a decorator that
+    throws an error if `sink_.Append` fails. For this project, you only need to remember
+    to wrap all your calls to `sink_.Append` in PARQUET_THROW_NOT_OK as demonstrated here.
+    
+    @param buffer: a pointer to the data to append to sink_.
+    @param num_values: the number of values in the buffer.
+  */
   if (num_values > 0) {
     PARQUET_THROW_NOT_OK(sink_.Append(buffer, num_values * sizeof(T)));
   }
@@ -1023,13 +1028,15 @@ int PlainDecoder<DType>::DecodeArrow(
 template <typename T>
 inline int DecodePlain(const uint8_t* data, int64_t data_size, int num_values,
                        int type_length, T* out) {
-                        //added by cs598
-                        //out: memory of output
-                        //T: type of the element to be decoded
-                        //data:byte pointer to data
-                        //data_size: number of byte in data
-                        //num_values: number of element to decode
-                        //type_legth: the legnth of the type to be decoded
+  /*
+    Hints from CS598 TAs:
+    
+    @param data: a byte pointer to the data to decode.
+    @param data_size: number of bytes in 'data'.
+    @param num_values: number of elements in 'data'.
+    @param type_legth: the length of type T, where T is the type that values in `data` will be decoded into.
+    @param out: allocated memory for storing the outputs (decoded data).
+  */
   int64_t bytes_to_decode = num_values * static_cast<int64_t>(sizeof(T));
   if (bytes_to_decode > data_size || bytes_to_decode > INT_MAX) {
     ParquetException::EofException();
@@ -1105,10 +1112,12 @@ inline int DecodePlain<FixedLenByteArray>(const uint8_t* data, int64_t data_size
 
 template <typename DType>
 int PlainDecoder<DType>::Decode(T* buffer, int max_values) {
-  //added by cs598
-  //This function will be called when decode
+  /*
+    Hint from CS598 TAs: this function is called when decoding values.
+    For more details on DecodePlain, refer to the comments on the function definition:
+    DecodePlain(const uint8_t* data, int64_t data_size, int num_values,int type_length, T* out)
+  */
   max_values = std::min(max_values, num_values_);
-  //refer to the comment for function: inline int DecodePlain(const uint8_t* data, int64_t data_size, int num_values,int type_length, T* out)
   int bytes_consumed = DecodePlain<T>(data_, len_, max_values, type_length_, buffer);
   data_ += bytes_consumed;
   len_ -= bytes_consumed;
@@ -3105,13 +3114,9 @@ class RleBooleanDecoder : public DecoderImpl, virtual public BooleanDecoder {
 };
 
 // ----------------------------------------------------------------------
-// ASCII encoder
-// added by cs598
-
-///encoder integers of apache arrow table to ASCII
-
+// ASCII Encoder: Encodes integers in Apache Arrow table to ASCII
+// Added by CS598
 // ----------------------------------------------------------------------
-// ASCIIEncoder
 template <typename DType>
 class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
   public:
@@ -3133,12 +3138,12 @@ class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
   void Put(const T* buffer, int num_values) override;
 
   void Put(const ::arrow::Array& values) override{
-    //not used in this mp, no need to implement.
+    // Not used in this project; you don't need to implement this.
   };
 
   void PutSpaced(const T* src, int num_values, const uint8_t* valid_bits,
                  int64_t valid_bits_offset) override {
-    //not used in this mp, no need to implement.
+    // Not used in this project; you don't need to implement this.
   }
 
  protected:
@@ -3147,16 +3152,13 @@ class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
 
 template <typename DType>
 void ASCIIEncoder<DType>::Put(const T* buffer, int num_values) {
-  //TO BE IMPLEMENTED
+  // TO BE IMPLEMENTED
 }
 
-
-
-
-
 // ----------------------------------------------------------------------
-// ASCIIDecoder
-
+// ASCII Decoder: Decodes ASCII into integers
+// Added by CS598
+// ----------------------------------------------------------------------
 template <typename DType>
 class ASCIIDecoder : public DecoderImpl, virtual public TypedDecoder<DType> {
  public:
@@ -3194,11 +3196,8 @@ class ASCIIDecoder : public DecoderImpl, virtual public TypedDecoder<DType> {
 
 template <typename DType>
 int ASCIIDecoder<DType>::Decode(T* buffer, int max_values) {
-  //TO BE IMPLEMENTED
+  // TO BE IMPLEMENTED
 }
-
-
-
 
 // ----------------------------------------------------------------------
 // DELTA_BYTE_ARRAY
@@ -3897,12 +3896,13 @@ std::unique_ptr<Encoder> MakeEncoder(Type::type type_num, Encoding::type encodin
             "DELTA_BYTE_ARRAY only supports BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY");
     }
   } else if(encoding == Encoding::ASCII){
-     // added by cs598
+     // Added by CS598
     switch (type_num){
       case Type::INT32:
         return std::make_unique<ASCIIEncoder<Int32Type>>(descr,pool);
       case Type::INT64:
         return std::make_unique<ASCIIEncoder<Int64Type>>(descr, pool);
+      // Uncomment this when you finish implementing the float encoder and decoder:
       // case Type::FLOAT:
       //   return std::make_unique<ASCIIEncoder<FloatType>>(descr,pool);
       default:
@@ -3981,12 +3981,13 @@ std::unique_ptr<Decoder> MakeDecoder(Type::type type_num, Encoding::type encodin
     }
     throw ParquetException("RLE encoding only supports BOOLEAN");
   } else if(encoding == Encoding::ASCII){
-    // added by cs598
+    // Added by CS598
     switch (type_num){
       case Type::INT32:
         return std::make_unique<ASCIIDecoder<Int32Type>>(descr);
       case Type::INT64:
         return std::make_unique<ASCIIDecoder<Int64Type>>(descr);
+      // Uncomment this when you finish implementing the float encoder and decoder:
       // case Type::FLOAT:
       //   return std::make_unique<ASCIIDecoder<FloatType>>(descr);
       default:
