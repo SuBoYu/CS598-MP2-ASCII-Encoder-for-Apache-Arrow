@@ -17,7 +17,7 @@
   under the License.
 -->
 # CS598 Project 2
-This repository is forked from Apache Arrow. Please check the instruction for the CS598 MP2 at [cpp/cs598/ascii/README.md](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/main/cpp/cs598/ascii/README.md)
+This repository is forked from Apache Arrow; the original documentation for Arrow can be found below. The instructions for CS598 Project 2 can be found at [cpp/cs598/ascii/README.md](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/main/cpp/cs598/ascii/README.md).
 
 # Apache Arrow
 

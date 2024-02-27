@@ -4,98 +4,97 @@ CS 598 YP Spring 2024\
 **Last Updated:** Feburuary 26th 2024\
 **Deadline:** March 26th 2024
 
-In this project, you will be changing the apache arrow source code and implementing a new Parquet encoder: ASCII Encoder, for Integer and Float data types.
+## Project Overview
 
-Before starting, you should learn the basic idea of apache arrow, apache parquet format by following the links below:
+In this project, you will be modifying the Apache Arrow source code to implement a new **ASCII Encoder and Decoder**. Your Encoder and Decoder will be used for writing/reading Arrow Dataframes to/from Parquet files and should support the Integer and Float data types.
 
-[Understand Arrow](https://arrow.apache.org/overview/)
+This project will require a basic understanding of Apache Arrow and the Apache Parquet format. A brief overview can be found in the links below:
 
-[What is parquet](https://parquet.apache.org/docs/concepts/)
+[Understanding Arrow](https://arrow.apache.org/overview/)
+
+[What is Parquet?](https://parquet.apache.org/docs/concepts/)
 
 [Difference between Arrow and Parquet](https://arrow.apache.org/faq/#:~:text=Arrow%20data%20is%20not%20compressed,commonly%20used%20together%20in%20applications).
 
 ## Getting Started
-## Step 1: Set up git repository
-Just as MP1, to get started, you will need to [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository to your own Github account - please do not commit directly to this repository!
+### Step 1: Seting up Your Github Repository
+Similar to MP1, you will need to [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository to your own Github account to get started - please do not commit directly to this repository!
 You will then need to make your cloned repository **private**. 
 
-## Step 2: Set up docker
-Enter the directory of this readme file. Then, you can run the grading project who's using apache arrow using Docker Compose. Note that the docker mounts two volumes inside the Docker image:
+### Step 2: Setting up Docker
+Enter the directory of this README file:
+
+```bash
+cd cpp/cs598/ascii
+```
+
+Then, you can run the grader using `docker-compose`. Note that the docker mounts two volumes inside the Docker image:
 * `/arrow` points to the Arrow source tree
-* `/io` points to this cs598/ascii directory
+* `/io` points to this directory (i.e., `cpp/cs598/ascii`)
 
 ```bash
 docker-compose run debug #spin up docker in debug mode
 cd io/
 ./run.sh #build arrow, build test and run
 ```
-or if you have already created a docker container before, you can reenter it by:
+or if you have already created a docker container before, you can reenter it and run the grader as follows:
 
 ```bash
 docker ps -a # to check the id of all the containers; then you can find the corresponding container id for the previous container
 docker start "your container id"
 docker exec -it "your container id" bash
+cd io/
+./run.sh
 ```
-After entering the bash, you can `cd io/` and `./run.sh` again.
 
-
-After running [`run.sh`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/cs598/ascii/run.sh) You will see errors because the functions are not been implemented yet. 
+Running [`run.sh`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/cs598/ascii/run.sh) now will result in errors as the ASCII encoding and decoding functions are not implemented yet. 
 ![alt text](image-3.png)
 
-## Your tasks
-In this project, you will be changing the apache arrow source code and implementing a new Parquet encoder: ASCII Encoder, for Integer and Float data type.
+## Tasks
+Your task is to modify the Apache Arrow source code to implement a new ASCII Encoder and Decoder for Parquet, supporting the Integer and Float data types.
 
-### Task 1: Implement ASCII encoder and decoder for the Integer type
-To do this, you'll need to fill the [`int ASCIIDecoder<DType>::Decode(T* buffer, int max_vfalues)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3180) and [`void ASCIIEncoder<DType>::Put(const T* buffer, int num_values)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133) function in [`src/parquet/encoding.cc`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133) file.
+### Task 1: Implement ASCII Encoder and Decoder for the Integer Type
+You will need to implement the ASCII Encoding and Decoding functions for the `int32` and `int64` datatypes found in [`src/parquet/encoding.cc`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133) - [`int ASCIIDecoder<DType>::Decode(T* buffer, int max_vfalues)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3180) and [`void ASCIIEncoder<DType>::Put(const T* buffer, int num_values)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133).
+* The **encoder function** will encode integers to ASCII representations: e.g., the integer `96` is encoded as `'9''6''\000'`, where `'\000'` is a zero byte marking the end of a string.
+* The **decoder function** will decode ASCII representations back into integers: e.g., `'9''6''\000'` is decoded back into the integer `96`.
 
-The ascii encoder will encode integer to ascii code. e.g., for integer 96, the encoder should encode it as '9''6''\000', with '\000' marks the end of a string.
+Hints to get started: 
+1. Observe the corresponding functions in the **PlainEncoder** and **PlainDecoder** which [encodes and decods values back to back](https://parquet.apache.org/docs/file-format/data-pages/encodings). The TA has provided some comments as hints to aid your understanding in [PlainEncoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L178) and [PlainDecoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L1107).
+2. Using debugging tools such as GDB to trace the control flow. GDB can be run as follows from the container:
 
-Ways to quickly get started: 
-1. Observe the corresponding functions in PlainEncoder and understand what they are doing. The TA has already added some comment for [PlainEncoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L178) and [PlainDecoder](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L1107).
-2. Using debugger tools like GDB to trace what's happening. (To start gdb, in io/ directory of the container, run gdb /build/example/arrow-example)
+```
+cd io/  # Make sure you are in the container
+gdb /build/example/arrow-example
+```
 
-After finishing task 1, you should be able to execute run.sh in /io and get 50% score.
+After finishing task 1, executing `run.sh` in `/io` should display a score of 50%.
 
-### Task 2: Further implement ASCII encoder and decoder for Float type
-Polish your [`int ASCIIDecoder<DType>::Decode(T* buffer, int max_vfalues)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3180) and [`void ASCIIEncoder<DType>::Put(const T* buffer, int num_values)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133) functions to further support float encoding and decoding. 
+### Task 2: Extending the ASCII Encoder and Decoder to Support the Float Type
+Your second task is to extend your implementations of [`int ASCIIDecoder<DType>::Decode(T* buffer, int max_vfalues)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3180) and [`void ASCIIEncoder<DType>::Put(const T* buffer, int num_values)`](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/32af9b1cc85d249ec2ee181d459d232ffa7ba414/cpp/src/parquet/encoding.cc#L3133) functions to support encoding and decoding floats.
 
-The ASCII representation of float should keep two decimal places. e.g., For float 32.5887, the encoder should encode it as '3''2''.''5''9''\000'. 
+When encoding floats as ASCII representation, round to **two decimal places**: e.g., The float 32.5887 is encoded as '3''2''.''5''9''\000'. 
 
-Except changing those two functions, you should also uncomment [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3906) and [this place](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3990) in encoding.cc for the float encoding to run.
+After extending the two functions to support floats, you should also uncomment [this code snippet](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3906) and [this code snippet](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/e143d55496529e9541b1ca8f9826185bb0c1e470/cpp/src/parquet/encoding.cc#L3990) in `encoding.cc` for the float encoding to run.
 ![alt text](image-4.png) ![alt text](image-5.png)
 
-After finishing task 2, you should be able to execute run.sh in /io and get all the 100% score. (See Running the test project for detail)
+After finishing task 2, executing `run.sh` in `/io` should display a full score of 100%.
 
 ![alt text](image.png)
 
-## This directory
-
-This directory showcases an already written build script of Arrow C++ (in `build_arrow.sh`).
-This build is then used by an third-party C++ testing project
-using CMake logic to compile and link against the Arrow C++ library
-(in `build_example.sh` and `CMakeLists.txt`). If you are interested in how to build arrow yourself, you can visit [build apache arrow cpp](https://arrow.apache.org/docs/dev/developers/cpp/building.html#building-arrow-cpp)
-
-It also includes the docker configurations (in `docker-compose.yml` and `minimal.dockerfile`), because all the experiments are expected to be done in docker container. To learn more about docker and docker-compose, visit 
-- [docker](https://docker-curriculum.com/)
-- [docker-compose](https://docs.docker.com/compose/)
-
-When running, the test executable reads files named 'data_int.csv' and 'data.csv' respectively, saves them in Parquet Format using your encoder and then read the arrow table back from the parquet files using your decoder. 
-
-
 ## Grading
-The grade is given automatically by github workflow. You can check .github/grade.yml file for detail. For decoders, the reading + decoding efficiency must be better than the built-in csv reader. The final grade is devided into four parts, with each weights 25%:
+You will be evaluated on the correctness and efficiency of your implementations via the **Github Action workflow** found [here](https://github.com/illinoisdata/CS598-MP2-Apache-Arrow/blob/main/.github/workflows/grade.yml). Efficiency-wise, the reading + decoding efficiency of your decoder must be better than the built-in CSV reader. The final grade is divided as follows:
 
 - Integer Encoder: 25%
 - Integer Decoder: 25% (20% correctness + 5% efficiency)
 - Float Encoder: 25%
 - Float Decoder: 25% (20% correctness + 5% efficiency)
 
-Attention: Please Do not change anything of the testing file (test.cc, checker.cc and checker.h) and data files(data_int.csv and data.csv), we will use git diff to make sure it's untouched. If you changed it for debugging, please revert it before submitting your solution! 
+**Note**: Please ensure that the testing files (`test.cc`, `checker.cc` and `checker.h`) and data files(`data_int.csv` and `data.csv`) are unmodified in your submission. If you modified them during debugging, please remember to revert them before submission.
 
-You can check your final score after pushing your code to main on github action.
+You can check your final score after pushing your code to `main` in Github Actions:
 ![alt text](image-2.png) 
 ![alt text](image-1.png)
-If you cannot see it, please make sure you've enabled workflow on github.
+If Github Actions is missing, please make sure that you have enabled workflows in your repository.
 
 ## Submission instructions
 
@@ -103,7 +102,16 @@ You will submit your work for Project 2 by uploading the URL of your private rep
 - Billy Li (BillyZhaohengLi)
 - Hanxi Fang (iq180fq200)
 
+## FYI
 
+This directory contains a build script for Arrow C++ (in `build_arrow.sh`). The build is used by a third-party C++ testing project which is compiled and linked to the Arrow C++ library using CMake (in `build_example.sh` and `CMakeLists.txt`). 
+* Check out [build apache arrow cpp](https://arrow.apache.org/docs/dev/developers/cpp/building.html#building-arrow-cpp) if you are interested in building Arrow yourself.
+
+It also includes the docker configurations (in `docker-compose.yml` and `minimal.dockerfile`) as we expect all experiments to be run in the docker container. To learn more about docker and docker-compose, visit
+- [docker](https://docker-curriculum.com/)
+- [docker-compose](https://docs.docker.com/compose/)
+
+The test script grades your submission by reading the `data_int.csv` and `data.csv` files, saving them in Parquet Format using your encoder, then reading the Parquet files using your decoder back into Arrow tables.
 
 
 
