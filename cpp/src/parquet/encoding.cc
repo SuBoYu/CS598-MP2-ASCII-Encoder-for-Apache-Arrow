@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+#include <iomanip>
+#include <iostream>
 #include "arrow/array.h"
 #include "arrow/array/builder_dict.h"
 #include "arrow/stl_allocator.h"
@@ -49,8 +51,6 @@
 #include "parquet/platform.h"
 #include "parquet/schema.h"
 #include "parquet/types.h"
-#include <iostream>
-#include <iomanip>
 
 namespace bit_util = arrow::bit_util;
 
@@ -183,7 +183,7 @@ void PlainEncoder<DType>::Put(const T* buffer, int num_values) {
     Don't worry about the specifics of PARQUET_THROW_NOT_OK - it is a decorator that
     throws an error if `sink_.Append` fails. For this project, you only need to remember
     to wrap all your calls to `sink_.Append` in PARQUET_THROW_NOT_OK as demonstrated here.
-    
+
     @param buffer: a pointer to the data to append to sink_.
     @param num_values: the number of values in the buffer.
   */
@@ -1030,11 +1030,12 @@ inline int DecodePlain(const uint8_t* data, int64_t data_size, int num_values,
                        int type_length, T* out) {
   /*
     Hints from CS598 TAs:
-    
+
     @param data: a byte pointer to the data to decode.
     @param data_size: number of bytes in 'data'.
     @param num_values: number of elements in 'data'.
-    @param type_legth: the length of type T, where T is the type that values in `data` will be decoded into.
+    @param type_legth: the length of type T, where T is the type that values in `data`
+    will be decoded into.
     @param out: allocated memory for storing the outputs (decoded data).
   */
   int64_t bytes_to_decode = num_values * static_cast<int64_t>(sizeof(T));
@@ -1115,7 +1116,8 @@ int PlainDecoder<DType>::Decode(T* buffer, int max_values) {
   /*
     Hint from CS598 TAs: this function is called when decoding values.
     For more details on DecodePlain, refer to the comments on the function definition:
-    DecodePlain(const uint8_t* data, int64_t data_size, int num_values,int type_length, T* out)
+    DecodePlain(const uint8_t* data, int64_t data_size, int num_values,int type_length, T*
+    out)
   */
   max_values = std::min(max_values, num_values_);
   int bytes_consumed = DecodePlain<T>(data_, len_, max_values, type_length_, buffer);
@@ -3119,7 +3121,7 @@ class RleBooleanDecoder : public DecoderImpl, virtual public BooleanDecoder {
 // ----------------------------------------------------------------------
 template <typename DType>
 class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
-  public:
+ public:
   using T = typename DType::c_type;
 
   explicit ASCIIEncoder(const ColumnDescriptor* descr, MemoryPool* pool)
@@ -3138,7 +3140,7 @@ class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
   void Put(const T* buffer, int num_values) override;
 
   void Put(const ::arrow::Array& values) override{
-    // Not used in this project; you don't need to implement this.
+      // Not used in this project; you don't need to implement this.
   };
 
   void PutSpaced(const T* src, int num_values, const uint8_t* valid_bits,
@@ -3153,6 +3155,20 @@ class ASCIIEncoder : public EncoderImpl, virtual public TypedEncoder<DType> {
 template <typename DType>
 void ASCIIEncoder<DType>::Put(const T* buffer, int num_values) {
   // TO BE IMPLEMENTED
+  for (int i = 0; i < num_values; i++) {
+    std::stringstream ss;
+    switch (DType::type_num) {
+      case Type::INT32:
+      case Type::INT64:
+        ss << buffer[i];
+        break;
+      case Type::FLOAT:
+        ss << std::fixed << std::setprecision(2) << buffer[i];
+        break;
+    }
+    PARQUET_THROW_NOT_OK(sink_.Append(ss.str().c_str(), ss.str().length()));
+    PARQUET_THROW_NOT_OK(sink_.Append("\000", 1));
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -3165,8 +3181,9 @@ class ASCIIDecoder : public DecoderImpl, virtual public TypedDecoder<DType> {
   using T = typename DType::c_type;
 
   explicit ASCIIDecoder(const ColumnDescriptor* descr)
-      : DecoderImpl(descr, Encoding::ASCII){
-    if (DType::type_num != Type::INT32 && DType::type_num != Type::INT64 && DType::type_num != Type::FLOAT) {
+      : DecoderImpl(descr, Encoding::ASCII) {
+    if (DType::type_num != Type::INT32 && DType::type_num != Type::INT64 &&
+        DType::type_num != Type::FLOAT) {
       throw ParquetException("ascii decoding should only be for integer data.");
     }
     if (descr_ && descr_->physical_type() == Type::FIXED_LEN_BYTE_ARRAY) {
@@ -3180,23 +3197,47 @@ class ASCIIDecoder : public DecoderImpl, virtual public TypedDecoder<DType> {
 
   int DecodeArrow(int num_values, int null_count, const uint8_t* valid_bits,
                   int64_t valid_bits_offset,
-                  typename EncodingTraits<DType>::Accumulator* builder) override{
-                     //not used in this mp, no need to implement.
-                     return 0;
-                  };
+                  typename EncodingTraits<DType>::Accumulator* builder) override {
+    // not used in this mp, no need to implement.
+    return 0;
+  };
 
   int DecodeArrow(int num_values, int null_count, const uint8_t* valid_bits,
                   int64_t valid_bits_offset,
-                  typename EncodingTraits<DType>::DictAccumulator* builder) override{
-                     //not used in this mp, no need to implement.
-                     return 0;
-                  };
+                  typename EncodingTraits<DType>::DictAccumulator* builder) override {
+    // not used in this mp, no need to implement.
+    return 0;
+  };
 };
-
 
 template <typename DType>
 int ASCIIDecoder<DType>::Decode(T* buffer, int max_values) {
   // TO BE IMPLEMENTED
+  int num_decoded = 0;
+  const char* data = reinterpret_cast<const char*>(data_);
+  const char* data_end = reinterpret_cast<const char*>(data_ + len_);
+  while (num_decoded < max_values && data < data_end) {
+    char* end;
+    switch (DType::type_num) {
+      case Type::INT32:
+      case Type::INT64:
+        buffer[num_decoded] = static_cast<T>(std::strtoll(data, &end, 10));
+        break;
+      case Type::FLOAT:
+        buffer[num_decoded] = static_cast<T>(std::strtof(data, &end));
+        break;
+    }
+    if (data == end) {
+      break;  // No more numbers to decode
+    }
+    ++num_decoded;
+    data = end + 1;  // Move to the start of the next number
+  }
+  int bytes_consumed = data - reinterpret_cast<const char*>(data_);
+  data_ += bytes_consumed;
+  len_ -= bytes_consumed;
+  num_values_ -= num_decoded;
+  return num_decoded;
 }
 
 // ----------------------------------------------------------------------
@@ -3895,22 +3936,20 @@ std::unique_ptr<Encoder> MakeEncoder(Type::type type_num, Encoding::type encodin
         throw ParquetException(
             "DELTA_BYTE_ARRAY only supports BYTE_ARRAY and FIXED_LEN_BYTE_ARRAY");
     }
-  } else if(encoding == Encoding::ASCII){
-     // Added by CS598
-    switch (type_num){
+  } else if (encoding == Encoding::ASCII) {
+    // Added by CS598
+    switch (type_num) {
       case Type::INT32:
-        return std::make_unique<ASCIIEncoder<Int32Type>>(descr,pool);
+        return std::make_unique<ASCIIEncoder<Int32Type>>(descr, pool);
       case Type::INT64:
         return std::make_unique<ASCIIEncoder<Int64Type>>(descr, pool);
       // Uncomment this when you finish implementing the float encoder and decoder:
-      // case Type::FLOAT:
-      //   return std::make_unique<ASCIIEncoder<FloatType>>(descr,pool);
+      case Type::FLOAT:
+        return std::make_unique<ASCIIEncoder<FloatType>>(descr, pool);
       default:
-        throw ParquetException(
-            "ASCII encoder only supports INT32 and INT64");
+        throw ParquetException("ASCII encoder only supports INT32 and INT64");
     }
-  }
-  else {
+  } else {
     ParquetException::NYI("Selected encoding is not supported");
   }
   DCHECK(false) << "Should not be able to reach this code";
@@ -3980,22 +4019,20 @@ std::unique_ptr<Decoder> MakeDecoder(Type::type type_num, Encoding::type encodin
       return std::make_unique<RleBooleanDecoder>(descr);
     }
     throw ParquetException("RLE encoding only supports BOOLEAN");
-  } else if(encoding == Encoding::ASCII){
+  } else if (encoding == Encoding::ASCII) {
     // Added by CS598
-    switch (type_num){
+    switch (type_num) {
       case Type::INT32:
         return std::make_unique<ASCIIDecoder<Int32Type>>(descr);
       case Type::INT64:
         return std::make_unique<ASCIIDecoder<Int64Type>>(descr);
       // Uncomment this when you finish implementing the float encoder and decoder:
-      // case Type::FLOAT:
-      //   return std::make_unique<ASCIIDecoder<FloatType>>(descr);
+      case Type::FLOAT:
+        return std::make_unique<ASCIIDecoder<FloatType>>(descr);
       default:
-        throw ParquetException(
-            "ASCII decoder only supports INT32 and INT64");
+        throw ParquetException("ASCII decoder only supports INT32 and INT64");
     }
-  }
-  else {
+  } else {
     ParquetException::NYI("Selected encoding is not supported");
   }
   DCHECK(false) << "Should not be able to reach this code";
